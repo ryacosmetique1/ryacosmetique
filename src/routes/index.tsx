@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import { ProductCard, type ProductRow } from "@/components/ProductCard";
+import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Leaf, ShieldCheck, Truck, Star, ArrowRight, Heart } from "lucide-react";
 import hero from "@/assets/hero-beauty.jpg";
 import logo from "@/assets/rya-logo.png.asset.json";
@@ -19,16 +20,23 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+interface Testimonial { id: string; customer_name: string; comment: string; rating: number }
+
 function HomePage() {
-  const featured = products.filter((p) => p.featured);
+  const [featured, setFeatured] = useState<ProductRow[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    supabase.from("products").select("id,slug,name,description,category,price,stock,image_url").eq("is_featured", true).eq("is_active", true).limit(4).then(({ data }) => setFeatured((data as ProductRow[]) ?? []));
+    supabase.from("testimonials").select("id,customer_name,comment,rating").eq("approved", true).limit(3).then(({ data }) => setTestimonials((data as Testimonial[]) ?? []));
+  }, []);
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <Hero />
       <Brand />
-      <Featured products={featured} />
+      {featured.length > 0 && <Featured products={featured} />}
       <WhyUs />
-      <Testimonials />
+      <Testimonials items={testimonials} />
       <CTA />
       <SiteFooter />
     </div>
@@ -90,7 +98,7 @@ function Brand() {
   );
 }
 
-function Featured({ products }: { products: typeof import("@/lib/products").products }) {
+function Featured({ products }: { products: ProductRow[] }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 flex items-end justify-between gap-4">
@@ -111,7 +119,7 @@ function Featured({ products }: { products: typeof import("@/lib/products").prod
 
 const reasons = [
   { icon: Leaf, title: "Ingrédients authentiques", text: "Formules naturelles, testées dermatologiquement." },
-  { icon: ShieldCheck, title: "Paiement sécurisé", text: "Wave, Orange Money, carte ou à la livraison." },
+  { icon: ShieldCheck, title: "Paiement sécurisé", text: "Wave, Orange Money ou à la livraison." },
   { icon: Truck, title: "Livraison rapide", text: "Expédition soignée et suivi à chaque étape." },
   { icon: Heart, title: "Conseils personnalisés", text: "Une équipe beauté à votre écoute." },
 ];
@@ -140,13 +148,8 @@ function WhyUs() {
   );
 }
 
-const reviews = [
-  { name: "Aïssatou D.", text: "Ma peau n'a jamais été aussi douce. Le parfum est divin et l'effet visible en 2 semaines.", role: "Dakar" },
-  { name: "Mariam S.", text: "Service client au top, livraison rapide. Le Rose Éclat a vraiment estompé mes taches.", role: "Thiès" },
-  { name: "Fatou N.", text: "Texture luxueuse, pénètre vite. J'ai converti toutes mes sœurs à RYA !", role: "Saint-Louis" },
-];
-
-function Testimonials() {
+function Testimonials({ items }: { items: Testimonial[] }) {
+  if (items.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-6 py-20">
       <div className="mx-auto max-w-2xl text-center">
@@ -154,16 +157,13 @@ function Testimonials() {
         <h2 className="mt-2 font-display text-4xl text-rose-deep md:text-5xl">Elles parlent de nous</h2>
       </div>
       <div className="mt-12 grid gap-6 md:grid-cols-3">
-        {reviews.map((r) => (
-          <figure key={r.name} className="relative rounded-2xl border border-border/60 bg-card p-8 shadow-soft">
+        {items.map((r) => (
+          <figure key={r.id} className="relative rounded-2xl border border-border/60 bg-card p-8 shadow-soft">
             <div className="flex gap-1 text-gold">
-              {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+              {Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
             </div>
-            <blockquote className="mt-4 font-display text-lg leading-relaxed text-foreground/90">"{r.text}"</blockquote>
-            <figcaption className="mt-6 text-sm">
-              <div className="text-rose-deep">{r.name}</div>
-              <div className="text-xs text-muted-foreground">{r.role}</div>
-            </figcaption>
+            <blockquote className="mt-4 font-display text-lg leading-relaxed text-foreground/90">"{r.comment}"</blockquote>
+            <figcaption className="mt-6 text-sm text-rose-deep">{r.customer_name}</figcaption>
           </figure>
         ))}
       </div>

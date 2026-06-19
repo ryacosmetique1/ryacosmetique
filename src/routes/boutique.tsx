@@ -1,25 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ProductCard } from "@/components/ProductCard";
-import { products, categories, type Category } from "@/lib/products";
+import { ProductCard, type ProductRow } from "@/components/ProductCard";
+import { supabase } from "@/integrations/supabase/client";
+import { categoriesList } from "@/lib/product-images";
 
 export const Route = createFileRoute("/boutique")({
   head: () => ({
     meta: [
       { title: "Boutique — RYA Business Group" },
       { name: "description", content: "Explorez notre boutique : laits corporels éclaircissants, hydratants, nourrissants, anti-taches et pour peaux sensibles." },
-      { property: "og:title", content: "Boutique RYA Business Group" },
-      { property: "og:description", content: "Laits corporels haut de gamme pour révéler l'éclat de votre peau." },
     ],
   }),
   component: Shop,
 });
 
+type Cat = (typeof categoriesList)[number] | "Tous";
+
 function Shop() {
-  const [active, setActive] = useState<Category | "Tous">("Tous");
+  const [active, setActive] = useState<Cat>("Tous");
+  const [products, setProducts] = useState<ProductRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("products").select("id,slug,name,description,category,price,stock,image_url").eq("is_active", true).order("created_at", { ascending: false }).then(({ data }) => {
+      setProducts((data as ProductRow[]) ?? []);
+      setLoading(false);
+    });
+  }, []);
+
   const list = active === "Tous" ? products : products.filter((p) => p.category === active);
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -33,10 +45,10 @@ function Shop() {
 
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10 flex flex-wrap justify-center gap-2">
-          {(["Tous", ...categories] as const).map((c) => (
+          {(["Tous", ...categoriesList] as const).map((c) => (
             <button
               key={c}
-              onClick={() => setActive(c as Category | "Tous")}
+              onClick={() => setActive(c as Cat)}
               className={`rounded-full border px-5 py-2 text-sm transition ${
                 active === c
                   ? "border-rose-deep bg-gradient-rose text-primary-foreground shadow-soft"
@@ -47,9 +59,15 @@ function Shop() {
             </button>
           ))}
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {list.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        {loading ? (
+          <p className="text-center text-muted-foreground">Chargement…</p>
+        ) : list.length === 0 ? (
+          <p className="text-center text-muted-foreground">Aucun produit dans cette catégorie.</p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {list.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        )}
       </div>
       <SiteFooter />
     </div>
