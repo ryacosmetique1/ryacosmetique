@@ -1,4 +1,5 @@
 import { ShoppingBag } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useCart } from "@/lib/cart";
 import { formatPrice, resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
@@ -19,7 +20,7 @@ export function ProductCard({ product }: { product: ProductRow }) {
   const out = product.stock <= 0;
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-all duration-500 hover:-translate-y-1 hover:shadow-gold">
-      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-hero">
+      <Link to="/produit/$slug" params={{ slug: product.slug }} className="relative aspect-[4/5] overflow-hidden bg-gradient-hero">
         <img
           src={resolveProductImage(product.slug, product.image_url)}
           alt={product.name}
@@ -34,9 +35,9 @@ export function ProductCard({ product }: { product: ProductRow }) {
             Épuisé
           </span>
         )}
-      </div>
+      </Link>
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-xl text-rose-deep">{product.name}</h3>
+        <Link to="/produit/$slug" params={{ slug: product.slug }} className="font-display text-xl text-rose-deep hover:underline">{product.name}</Link>
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
         <div className="mt-4 flex items-end justify-between">
           <div>

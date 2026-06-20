@@ -291,10 +291,10 @@ function ProductModal({ product, onClose, onSave }: { product: Partial<ProductRo
   async function upload(file: File) {
     setUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const up = await supabase.storage.from("payment-proofs").upload(path, file);
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const up = await supabase.storage.from("products").upload(path, file);
     if (up.error) { toast.error("Upload impossible : " + up.error.message); setUploading(false); return; }
-    const signed = await supabase.storage.from("payment-proofs").createSignedUrl(path, 60 * 60 * 24 * 365);
+    const signed = await supabase.storage.from("products").createSignedUrl(path, 60 * 60 * 24 * 365);
     setP((prev) => ({ ...prev, image_url: signed.data?.signedUrl ?? null }));
     setUploading(false);
   }
