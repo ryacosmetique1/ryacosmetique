@@ -17,6 +17,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProduitSlugRouteImport } from './routes/produit.$slug'
+import { Route as AuthenticatedPreuvePaiementRouteImport } from './routes/_authenticated/preuve-paiement'
 import { Route as AuthenticatedMonCompteRouteImport } from './routes/_authenticated/mon-compte'
 import { Route as AuthenticatedCommandeRouteImport } from './routes/_authenticated/commande'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -60,6 +62,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProduitSlugRoute = ProduitSlugRouteImport.update({
+  id: '/produit/$slug',
+  path: '/produit/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPreuvePaiementRoute =
+  AuthenticatedPreuvePaiementRouteImport.update({
+    id: '/preuve-paiement',
+    path: '/preuve-paiement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMonCompteRoute = AuthenticatedMonCompteRouteImport.update({
   id: '/mon-compte',
   path: '/mon-compte',
@@ -87,6 +100,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/commande': typeof AuthenticatedCommandeRoute
   '/mon-compte': typeof AuthenticatedMonCompteRoute
+  '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
+  '/produit/$slug': typeof ProduitSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +114,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/commande': typeof AuthenticatedCommandeRoute
   '/mon-compte': typeof AuthenticatedMonCompteRoute
+  '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
+  '/produit/$slug': typeof ProduitSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +130,8 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/commande': typeof AuthenticatedCommandeRoute
   '/_authenticated/mon-compte': typeof AuthenticatedMonCompteRoute
+  '/_authenticated/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
+  '/produit/$slug': typeof ProduitSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +146,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/commande'
     | '/mon-compte'
+    | '/preuve-paiement'
+    | '/produit/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +160,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/commande'
     | '/mon-compte'
+    | '/preuve-paiement'
+    | '/produit/$slug'
   id:
     | '__root__'
     | '/'
@@ -152,6 +175,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/commande'
     | '/_authenticated/mon-compte'
+    | '/_authenticated/preuve-paiement'
+    | '/produit/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -163,6 +188,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   PanierRoute: typeof PanierRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ProduitSlugRoute: typeof ProduitSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +249,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/produit/$slug': {
+      id: '/produit/$slug'
+      path: '/produit/$slug'
+      fullPath: '/produit/$slug'
+      preLoaderRoute: typeof ProduitSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/preuve-paiement': {
+      id: '/_authenticated/preuve-paiement'
+      path: '/preuve-paiement'
+      fullPath: '/preuve-paiement'
+      preLoaderRoute: typeof AuthenticatedPreuvePaiementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mon-compte': {
       id: '/_authenticated/mon-compte'
       path: '/mon-compte'
@@ -251,12 +291,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCommandeRoute: typeof AuthenticatedCommandeRoute
   AuthenticatedMonCompteRoute: typeof AuthenticatedMonCompteRoute
+  AuthenticatedPreuvePaiementRoute: typeof AuthenticatedPreuvePaiementRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCommandeRoute: AuthenticatedCommandeRoute,
   AuthenticatedMonCompteRoute: AuthenticatedMonCompteRoute,
+  AuthenticatedPreuvePaiementRoute: AuthenticatedPreuvePaiementRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -271,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   PanierRoute: PanierRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ProduitSlugRoute: ProduitSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
