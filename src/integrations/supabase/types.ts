@@ -231,7 +231,9 @@ export type Database = {
           created_at: string
           customer_name: string
           id: string
+          product_id: string | null
           rating: number
+          user_id: string | null
         }
         Insert: {
           approved?: boolean
@@ -239,7 +241,9 @@ export type Database = {
           created_at?: string
           customer_name: string
           id?: string
+          product_id?: string | null
           rating: number
+          user_id?: string | null
         }
         Update: {
           approved?: boolean
@@ -247,9 +251,19 @@ export type Database = {
           created_at?: string
           customer_name?: string
           id?: string
+          product_id?: string | null
           rating?: number
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
