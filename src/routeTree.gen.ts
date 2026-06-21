@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProduitSlugRouteImport } from './routes/produit.$slug'
 import { Route as AuthenticatedPreuvePaiementRouteImport } from './routes/_authenticated/preuve-paiement'
 import { Route as AuthenticatedMonCompteRouteImport } from './routes/_authenticated/mon-compte'
+import { Route as AuthenticatedMesCommandesRouteImport } from './routes/_authenticated/mes-commandes'
 import { Route as AuthenticatedCommandeRouteImport } from './routes/_authenticated/commande'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
@@ -78,6 +79,12 @@ const AuthenticatedMonCompteRoute = AuthenticatedMonCompteRouteImport.update({
   path: '/mon-compte',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMesCommandesRoute =
+  AuthenticatedMesCommandesRouteImport.update({
+    id: '/mes-commandes',
+    path: '/mes-commandes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCommandeRoute = AuthenticatedCommandeRouteImport.update({
   id: '/commande',
   path: '/commande',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/commande': typeof AuthenticatedCommandeRoute
+  '/mes-commandes': typeof AuthenticatedMesCommandesRoute
   '/mon-compte': typeof AuthenticatedMonCompteRoute
   '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/commande': typeof AuthenticatedCommandeRoute
+  '/mes-commandes': typeof AuthenticatedMesCommandesRoute
   '/mon-compte': typeof AuthenticatedMonCompteRoute
   '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/commande': typeof AuthenticatedCommandeRoute
+  '/_authenticated/mes-commandes': typeof AuthenticatedMesCommandesRoute
   '/_authenticated/mon-compte': typeof AuthenticatedMonCompteRoute
   '/_authenticated/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/commande'
+    | '/mes-commandes'
     | '/mon-compte'
     | '/preuve-paiement'
     | '/produit/$slug'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/commande'
+    | '/mes-commandes'
     | '/mon-compte'
     | '/preuve-paiement'
     | '/produit/$slug'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/commande'
+    | '/_authenticated/mes-commandes'
     | '/_authenticated/mon-compte'
     | '/_authenticated/preuve-paiement'
     | '/produit/$slug'
@@ -270,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMonCompteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mes-commandes': {
+      id: '/_authenticated/mes-commandes'
+      path: '/mes-commandes'
+      fullPath: '/mes-commandes'
+      preLoaderRoute: typeof AuthenticatedMesCommandesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/commande': {
       id: '/_authenticated/commande'
       path: '/commande'
@@ -290,6 +310,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCommandeRoute: typeof AuthenticatedCommandeRoute
+  AuthenticatedMesCommandesRoute: typeof AuthenticatedMesCommandesRoute
   AuthenticatedMonCompteRoute: typeof AuthenticatedMonCompteRoute
   AuthenticatedPreuvePaiementRoute: typeof AuthenticatedPreuvePaiementRoute
 }
@@ -297,6 +318,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCommandeRoute: AuthenticatedCommandeRoute,
+  AuthenticatedMesCommandesRoute: AuthenticatedMesCommandesRoute,
   AuthenticatedMonCompteRoute: AuthenticatedMonCompteRoute,
   AuthenticatedPreuvePaiementRoute: AuthenticatedPreuvePaiementRoute,
 }

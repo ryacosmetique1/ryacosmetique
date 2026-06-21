@@ -58,7 +58,8 @@ function AccountPage() {
             <h1 className="font-display text-4xl text-rose-deep md:text-5xl">Mon compte</h1>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/mes-commandes" className="text-sm text-rose-deep underline">Suivi des commandes</Link>
             <Link to="/preuve-paiement" className="text-sm text-rose-deep underline">Mes preuves de paiement</Link>
             <button onClick={signOut} className="text-sm text-muted-foreground underline hover:text-rose-deep">Déconnexion</button>
           </div>

@@ -9,8 +9,63 @@ import { useCart } from "@/lib/cart";
 import { formatPrice, resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 
+const SITE = "https://rya-cosmetique.lovable.app";
+
 export const Route = createFileRoute("/produit/$slug")({
-  head: ({ params }) => ({ meta: [{ title: `${params.slug} — RYA` }] }),
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("products")
+      .select("id,slug,name,description,category,price,stock,image_url")
+      .eq("slug", params.slug)
+      .maybeSingle();
+    return { product: (data as Product | null) ?? null };
+  },
+  head: ({ params, loaderData }) => {
+    const p = loaderData?.product;
+    const url = `${SITE}/produit/${params.slug}`;
+    if (!p) return { meta: [{ title: "Produit introuvable — RYA Business Group" }] };
+    const title = `${p.name} — RYA Business Group`;
+    const desc = (p.description || `Découvrez ${p.name}, soin ${p.category} de RYA Business Group. Lait corporel premium, livraison rapide au Sénégal.`).slice(0, 158);
+    const img = p.image_url || `${SITE}/og-default.jpg`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: img },
+        { property: "product:price:amount", content: String(p.price) },
+        { property: "product:price:currency", content: "XOF" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+        { name: "twitter:image", content: img },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [{
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: p.name,
+          description: desc,
+          image: img,
+          sku: p.id,
+          category: p.category,
+          brand: { "@type": "Brand", name: "RYA Business Group" },
+          offers: {
+            "@type": "Offer",
+            url,
+            priceCurrency: "XOF",
+            price: p.price,
+            availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          },
+        }),
+      }],
+    };
+  },
   component: ProductDetail,
 });
 
