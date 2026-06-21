@@ -271,6 +271,31 @@ function AdminPage() {
             </div>
           </div>
         )}
+
+        {tab === "reviews" && (
+          <div className="mt-8 space-y-3">
+            {reviews.length === 0 ? <p className="text-sm text-muted-foreground">Aucun avis.</p> : reviews.map((r) => (
+              <div key={r.id} className={`rounded-2xl border p-4 ${r.approved ? "border-border bg-card" : "border-amber-300 bg-amber-50/40"}`}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-rose-deep">{r.customer_name} <span className="text-xs text-muted-foreground">· {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
+                    <div className="text-xs text-muted-foreground">Produit : {r.products?.name ?? "—"} · {new Date(r.created_at).toLocaleString("fr-FR")}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {r.approved ? (
+                      <button onClick={() => moderateReview(r.id, false)} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-muted">Masquer</button>
+                    ) : (
+                      <button onClick={() => moderateReview(r.id, true)} className="rounded-full bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700">Publier</button>
+                    )}
+                    <button onClick={() => deleteReview(r.id)} className="rounded-full border border-rose-deep px-3 py-1 text-xs text-rose-deep hover:bg-rose-pale/40">Supprimer</button>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-foreground/80">{r.comment}</p>
+                <div className="mt-2 text-xs">{r.approved ? <span className="text-emerald-700">✓ Publié</span> : <span className="text-amber-700">⏳ En attente de modération</span>}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {editing && <ProductModal product={editing} onClose={() => setEditing(null)} onSave={saveProduct} />}
