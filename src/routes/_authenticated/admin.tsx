@@ -41,15 +41,17 @@ interface OrderRow {
 
 interface CustomerRow { id: string; fullname: string | null; email: string | null; phone: string | null; created_at: string }
 interface PromoRow { id: string; code: string; description: string | null; discount_percent: number; active: boolean }
+interface ReviewRow { id: string; customer_name: string; comment: string; rating: number; approved: boolean; created_at: string; product_id: string | null; products?: { name: string } | null }
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions" | "reviews">("dashboard");
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [promotions, setPromotions] = useState<PromoRow[]>([]);
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [editing, setEditing] = useState<Partial<ProductRow> | null>(null);
 
   useEffect(() => {
@@ -60,18 +62,33 @@ function AdminPage() {
   }, [loading, isAdmin, navigate]);
 
   async function reload() {
-    const [p, o, c, pr] = await Promise.all([
+    const [p, o, c, pr, rv] = await Promise.all([
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*,order_items(product_name,quantity,unit_price)").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id,fullname,email,phone,created_at").order("created_at", { ascending: false }),
       supabase.from("promotions").select("*").order("created_at", { ascending: false }),
+      supabase.from("testimonials").select("id,customer_name,comment,rating,approved,created_at,product_id,products(name)").order("created_at", { ascending: false }),
     ]);
     setProducts((p.data as ProductRow[]) ?? []);
     setOrders((o.data as OrderRow[]) ?? []);
     setCustomers((c.data as CustomerRow[]) ?? []);
     setPromotions((pr.data as PromoRow[]) ?? []);
+    setReviews((rv.data as ReviewRow[]) ?? []);
   }
   useEffect(() => { if (isAdmin) reload(); }, [isAdmin]);
+
+  async function moderateReview(id: string, approved: boolean) {
+    const { error } = await supabase.from("testimonials").update({ approved }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(approved ? "Avis publié" : "Avis masqué");
+    reload();
+  }
+  async function deleteReview(id: string) {
+    if (!confirm("Supprimer cet avis ?")) return;
+    const { error } = await supabase.from("testimonials").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    reload();
+  }
 
   const stats = useMemo(() => {
     const revenue = orders.reduce((a, o) => a + Number(o.total_amount), 0);
@@ -127,8 +144,9 @@ function AdminPage() {
             ["orders", "Commandes"],
             ["customers", "Clients"],
             ["promotions", "Promotions"],
+            ["reviews", `Avis${reviews.filter(r=>!r.approved).length ? ` (${reviews.filter(r=>!r.approved).length})` : ""}`],
           ] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)} className={`px-4 py-2 text-sm transition ${tab === k ? "border-b-2 border-rose-deep text-rose-deep" : "text-muted-foreground hover:text-rose-deep"}`}>{l}</button>
+            <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-2 text-sm transition ${tab === k ? "border-b-2 border-rose-deep text-rose-deep" : "text-muted-foreground hover:text-rose-deep"}`}>{l}</button>
           ))}
         </div>
 
