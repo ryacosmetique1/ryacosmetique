@@ -4,6 +4,7 @@ import { useState } from "react";
 import logo from "@/assets/rya-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/hooks/use-auth";
+import { AdminNotifications } from "@/components/AdminNotifications";
 
 const nav = [
   { to: "/", label: "Accueil" },
