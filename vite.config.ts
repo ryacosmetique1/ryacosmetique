@@ -6,11 +6,17 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 export default defineConfig({
   // Cloudflare's deploy setup expects a visible plugins array in vite.config.ts
   // so it can inject its deployment adapter. Keep this empty: Lovable's config
   // already adds TanStack Start, React, Tailwind, tsconfig paths, and Nitro.
-  plugins: [],
+  plugins: [cloudflare({
+    viteEnvironment: {
+      name: "ssr"
+    }
+  })],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
