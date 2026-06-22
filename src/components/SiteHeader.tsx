@@ -4,6 +4,7 @@ import { useState } from "react";
 import logo from "@/assets/rya-logo.png.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/hooks/use-auth";
+import { AdminNotifications } from "@/components/AdminNotifications";
 
 const nav = [
   { to: "/", label: "Accueil" },
@@ -53,6 +54,7 @@ export function SiteHeader() {
 
           {user ? (
             <>
+              <AdminNotifications />
               {isAdmin && (
                 <Link to="/admin" className="hidden md:inline-flex items-center gap-1 rounded-full bg-gold/20 px-3 py-2 text-xs text-rose-deep">
                   <LayoutDashboard className="h-3.5 w-3.5" /> Admin
