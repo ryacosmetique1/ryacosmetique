@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, Facebook, Phone, Mail, MapPin } from "lucide-react";
+import { Instagram, Facebook, Phone, Mail, MapPin, Lock } from "lucide-react";
 import logo from "@/assets/rya-logo.png.asset.json";
 
 export function SiteFooter() {
@@ -46,8 +46,16 @@ export function SiteFooter() {
           </form>
         </div>
       </div>
-      <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
+      <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground relative">
         © {new Date().getFullYear()} RYA Business Group. Tous droits réservés.
+        <Link
+          to="/admin-login"
+          aria-label="Accès administrateur"
+          title="Accès administrateur"
+          className="absolute right-6 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full border border-gold/30 text-muted-foreground/60 opacity-60 transition hover:opacity-100 hover:text-gold hover:border-gold hover:bg-gold/5"
+        >
+          <Lock className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </footer>
   );
