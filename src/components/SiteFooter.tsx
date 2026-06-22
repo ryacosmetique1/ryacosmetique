@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, Facebook, Phone, Mail, MapPin } from "lucide-react";
+import { Instagram, Facebook, Phone, Mail, MapPin, Lock } from "lucide-react";
 import logo from "@/assets/rya-logo.png.asset.json";
 
 export function SiteFooter() {
