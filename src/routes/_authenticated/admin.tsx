@@ -29,6 +29,7 @@ interface ProductRow {
 interface OrderRow {
   id: string;
   order_number: string;
+  customer_id: string | null;
   fullname: string;
   phone: string;
   address: string;
