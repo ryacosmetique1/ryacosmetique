@@ -230,23 +230,7 @@ function AdminPage() {
         )}
 
         {tab === "customers" && (
-          <div className="mt-8 overflow-x-auto rounded-2xl border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr><th className="p-3">Nom</th><th className="p-3">Email</th><th className="p-3">Téléphone</th><th className="p-3">Inscription</th></tr>
-              </thead>
-              <tbody>
-                {customers.map((c) => (
-                  <tr key={c.id} className="border-t border-border">
-                    <td className="p-3">{c.fullname || "—"}</td>
-                    <td className="p-3">{c.email}</td>
-                    <td className="p-3">{c.phone || "—"}</td>
-                    <td className="p-3 text-xs">{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CustomersSection customers={customers} orders={orders} />
         )}
 
         {tab === "promotions" && (
