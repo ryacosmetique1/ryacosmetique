@@ -298,6 +298,142 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+function CustomersSection({ customers, orders }: { customers: CustomerRow[]; orders: OrderRow[] }) {
+  const [q, setQ] = useState("");
+  const [selected, setSelected] = useState<CustomerRow | null>(null);
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return customers;
+    return customers.filter((c) =>
+      [c.fullname, c.email, c.phone].some((v) => (v ?? "").toLowerCase().includes(s)),
+    );
+  }, [customers, q]);
+
+  const customerOrders = useMemo(() => {
+    if (!selected) return [];
+    return orders.filter(
+      (o) =>
+        o.customer_id === selected.id ||
+        (selected.phone && o.phone === selected.phone) ||
+        (selected.email && o.fullname && selected.fullname && o.fullname === selected.fullname),
+    );
+  }, [orders, selected]);
+
+  const stats = useMemo(() => {
+    const total = customerOrders.reduce((a, o) => a + Number(o.total_amount), 0);
+    return { count: customerOrders.length, total };
+  }, [customerOrders]);
+
+  return (
+    <div className="mt-8 space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Rechercher par nom, email ou téléphone…"
+          className="flex-1 min-w-[240px] rounded-full border border-border bg-background px-4 py-2 text-sm"
+        />
+        <span className="text-xs text-muted-foreground">{filtered.length} client(s)</span>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <tr>
+              <th className="p-3">Nom</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Téléphone</th>
+              <th className="p-3">Commandes</th>
+              <th className="p-3">Inscription</th>
+              <th className="p-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((c) => {
+              const count = orders.filter(
+                (o) => o.customer_id === c.id || (c.phone && o.phone === c.phone),
+              ).length;
+              return (
+                <tr key={c.id} className="border-t border-border">
+                  <td className="p-3 font-medium">{c.fullname || "—"}</td>
+                  <td className="p-3">{c.email}</td>
+                  <td className="p-3">{c.phone || "—"}</td>
+                  <td className="p-3">{count}</td>
+                  <td className="p-3 text-xs">{new Date(c.created_at).toLocaleDateString("fr-FR")}</td>
+                  <td className="p-3 text-right">
+                    <button
+                      onClick={() => setSelected(c)}
+                      className="rounded-full border border-rose-deep px-3 py-1 text-xs text-rose-deep hover:bg-rose-pale/40"
+                    >
+                      Historique
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && (
+              <tr><td colSpan={6} className="p-6 text-center text-sm text-muted-foreground">Aucun client trouvé.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setSelected(null)}>
+          <div className="w-full max-w-3xl rounded-2xl bg-background p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-display text-2xl text-rose-deep">{selected.fullname || selected.email}</h3>
+                <p className="text-xs text-muted-foreground">{selected.email} · {selected.phone || "—"}</p>
+                <p className="mt-1 text-xs">Client depuis {new Date(selected.created_at).toLocaleDateString("fr-FR")}</p>
+              </div>
+              <button onClick={() => setSelected(null)}><X className="h-5 w-5" /></button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Commandes</div>
+                <div className="mt-1 font-display text-2xl text-rose-deep">{stats.count}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Total dépensé</div>
+                <div className="mt-1 font-display text-2xl text-rose-deep">{formatPrice(stats.total)}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-[50vh] overflow-y-auto rounded-2xl border border-border">
+              {customerOrders.length === 0 ? (
+                <p className="p-6 text-center text-sm text-muted-foreground">Aucune commande pour ce client.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="p-3">N°</th><th className="p-3">Date</th><th className="p-3">Articles</th><th className="p-3">Total</th><th className="p-3">Statut</th></tr>
+                  </thead>
+                  <tbody>
+                    {customerOrders.map((o) => (
+                      <tr key={o.id} className="border-t border-border align-top">
+                        <td className="p-3 font-medium text-rose-deep">{o.order_number}</td>
+                        <td className="p-3 text-xs">{new Date(o.created_at).toLocaleDateString("fr-FR")}</td>
+                        <td className="p-3 text-xs">
+                          {o.order_items?.map((it, i) => (
+                            <div key={i}>{it.product_name} ×{it.quantity}</div>
+                          ))}
+                        </td>
+                        <td className="p-3">{formatPrice(Number(o.total_amount))}</td>
+                        <td className="p-3 text-xs">{o.order_status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PromoForm({ onSave }: { onSave: (p: Partial<PromoRow>) => void }) {
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
