@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "testi insert auth" ON public.testimonials;
