@@ -202,8 +202,9 @@ function AdminPage() {
                       <td className="p-3"><span className={p.stock <= 5 ? "text-rose-deep" : ""}>{p.stock}</span></td>
                       <td className="p-3 text-xs">{p.is_active ? "Actif" : "Masqué"}{p.is_featured ? " · Vedette" : ""}</td>
                       <td className="p-3 text-right">
-                        <button onClick={() => setEditing(p)} className="p-1 hover:text-rose-deep"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => deleteProduct(p.id)} className="p-1 hover:text-rose-deep"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => setEditing(p)} className="p-1 hover:text-rose-deep" title="Modifier"><Pencil className="h-4 w-4" /></button>
+                        <button onClick={() => notifyProduct(p.id, p.name)} className="p-1 hover:text-rose-deep" title="Envoyer une notif push"><Bell className="h-4 w-4" /></button>
+                        <button onClick={() => deleteProduct(p.id)} className="p-1 hover:text-rose-deep" title="Supprimer"><Trash2 className="h-4 w-4" /></button>
                       </td>
                     </tr>
                   ))}
