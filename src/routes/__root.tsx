@@ -15,6 +15,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { CartProvider } from "@/lib/cart";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PushOptIn } from "@/components/PushOptIn";
 
 function NotFoundComponent() {
   return (
@@ -137,6 +138,7 @@ function RootComponent() {
           <Outlet />
           <Toaster />
           <InstallPrompt />
+          <PushOptIn />
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
