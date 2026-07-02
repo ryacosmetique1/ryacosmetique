@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, categoriesList } from "@/lib/product-images";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Plus, X, Bell } from "lucide-react";
 import { toast } from "sonner";
+import { notifyNewProduct } from "@/lib/notify.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Administration — RYA" }] }),
@@ -99,6 +101,17 @@ function AdminPage() {
     return { revenue, top };
   }, [orders]);
 
+  const notifyFn = useServerFn(notifyNewProduct);
+  async function notifyProduct(id: string, name: string) {
+    if (!confirm(`Envoyer une notification push aux abonnés pour "${name}" ?`)) return;
+    try {
+      const r = (await notifyFn({ data: { product_id: id } })) as { sent: number; failed: number; total: number };
+      toast.success(`Push envoyé : ${r.sent}/${r.total} (${r.failed} échecs)`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur envoi push");
+    }
+  }
+
   async function saveProduct(p: Partial<ProductRow>) {
     if (!p.name || !p.slug || !p.category) return toast.error("Champs requis manquants");
     const payload = {
@@ -189,8 +202,9 @@ function AdminPage() {
                       <td className="p-3"><span className={p.stock <= 5 ? "text-rose-deep" : ""}>{p.stock}</span></td>
                       <td className="p-3 text-xs">{p.is_active ? "Actif" : "Masqué"}{p.is_featured ? " · Vedette" : ""}</td>
                       <td className="p-3 text-right">
-                        <button onClick={() => setEditing(p)} className="p-1 hover:text-rose-deep"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => deleteProduct(p.id)} className="p-1 hover:text-rose-deep"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => setEditing(p)} className="p-1 hover:text-rose-deep" title="Modifier"><Pencil className="h-4 w-4" /></button>
+                        <button onClick={() => notifyProduct(p.id, p.name)} className="p-1 hover:text-rose-deep" title="Envoyer une notif push"><Bell className="h-4 w-4" /></button>
+                        <button onClick={() => deleteProduct(p.id)} className="p-1 hover:text-rose-deep" title="Supprimer"><Trash2 className="h-4 w-4" /></button>
                       </td>
                     </tr>
                   ))}

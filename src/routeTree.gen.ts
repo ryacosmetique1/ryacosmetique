@@ -24,6 +24,9 @@ import { Route as AuthenticatedMonCompteRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMesCommandesRouteImport } from './routes/_authenticated/mes-commandes'
 import { Route as AuthenticatedCommandeRouteImport } from './routes/_authenticated/commande'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicSeedRouteImport } from './routes/api/public/seed'
+import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push-subscribe'
+import { Route as ApiPublicAdminResetRouteImport } from './routes/api/public/admin-reset'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -101,6 +104,21 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicSeedRoute = ApiPublicSeedRouteImport.update({
+  id: '/api/public/seed',
+  path: '/api/public/seed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPushSubscribeRoute = ApiPublicPushSubscribeRouteImport.update({
+  id: '/api/public/push-subscribe',
+  path: '/api/public/push-subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAdminResetRoute = ApiPublicAdminResetRouteImport.update({
+  id: '/api/public/admin-reset',
+  path: '/api/public/admin-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +135,9 @@ export interface FileRoutesByFullPath {
   '/mon-compte': typeof AuthenticatedMonCompteRoute
   '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
+  '/api/public/admin-reset': typeof ApiPublicAdminResetRoute
+  '/api/public/push-subscribe': typeof ApiPublicPushSubscribeRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -133,6 +154,9 @@ export interface FileRoutesByTo {
   '/mon-compte': typeof AuthenticatedMonCompteRoute
   '/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
+  '/api/public/admin-reset': typeof ApiPublicAdminResetRoute
+  '/api/public/push-subscribe': typeof ApiPublicPushSubscribeRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,6 +175,9 @@ export interface FileRoutesById {
   '/_authenticated/mon-compte': typeof AuthenticatedMonCompteRoute
   '/_authenticated/preuve-paiement': typeof AuthenticatedPreuvePaiementRoute
   '/produit/$slug': typeof ProduitSlugRoute
+  '/api/public/admin-reset': typeof ApiPublicAdminResetRoute
+  '/api/public/push-subscribe': typeof ApiPublicPushSubscribeRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,6 +196,9 @@ export interface FileRouteTypes {
     | '/mon-compte'
     | '/preuve-paiement'
     | '/produit/$slug'
+    | '/api/public/admin-reset'
+    | '/api/public/push-subscribe'
+    | '/api/public/seed'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -185,6 +215,9 @@ export interface FileRouteTypes {
     | '/mon-compte'
     | '/preuve-paiement'
     | '/produit/$slug'
+    | '/api/public/admin-reset'
+    | '/api/public/push-subscribe'
+    | '/api/public/seed'
   id:
     | '__root__'
     | '/'
@@ -202,6 +235,9 @@ export interface FileRouteTypes {
     | '/_authenticated/mon-compte'
     | '/_authenticated/preuve-paiement'
     | '/produit/$slug'
+    | '/api/public/admin-reset'
+    | '/api/public/push-subscribe'
+    | '/api/public/seed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -215,6 +251,9 @@ export interface RootRouteChildren {
   PanierRoute: typeof PanierRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ProduitSlugRoute: typeof ProduitSlugRoute
+  ApiPublicAdminResetRoute: typeof ApiPublicAdminResetRoute
+  ApiPublicPushSubscribeRoute: typeof ApiPublicPushSubscribeRoute
+  ApiPublicSeedRoute: typeof ApiPublicSeedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -324,6 +363,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/seed': {
+      id: '/api/public/seed'
+      path: '/api/public/seed'
+      fullPath: '/api/public/seed'
+      preLoaderRoute: typeof ApiPublicSeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/push-subscribe': {
+      id: '/api/public/push-subscribe'
+      path: '/api/public/push-subscribe'
+      fullPath: '/api/public/push-subscribe'
+      preLoaderRoute: typeof ApiPublicPushSubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/admin-reset': {
+      id: '/api/public/admin-reset'
+      path: '/api/public/admin-reset'
+      fullPath: '/api/public/admin-reset'
+      preLoaderRoute: typeof ApiPublicAdminResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -357,17 +417,10 @@ const rootRouteChildren: RootRouteChildren = {
   PanierRoute: PanierRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ProduitSlugRoute: ProduitSlugRoute,
+  ApiPublicAdminResetRoute: ApiPublicAdminResetRoute,
+  ApiPublicPushSubscribeRoute: ApiPublicPushSubscribeRoute,
+  ApiPublicSeedRoute: ApiPublicSeedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
