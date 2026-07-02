@@ -101,6 +101,17 @@ function AdminPage() {
     return { revenue, top };
   }, [orders]);
 
+  const notifyFn = useServerFn(notifyNewProduct);
+  async function notifyProduct(id: string, name: string) {
+    if (!confirm(`Envoyer une notification push aux abonnés pour "${name}" ?`)) return;
+    try {
+      const r = (await notifyFn({ data: { product_id: id } })) as { sent: number; failed: number; total: number };
+      toast.success(`Push envoyé : ${r.sent}/${r.total} (${r.failed} échecs)`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur envoi push");
+    }
+  }
+
   async function saveProduct(p: Partial<ProductRow>) {
     if (!p.name || !p.slug || !p.category) return toast.error("Champs requis manquants");
     const payload = {
