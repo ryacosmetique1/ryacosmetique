@@ -45,6 +45,7 @@ interface OrderRow {
 interface CustomerRow { id: string; fullname: string | null; email: string | null; phone: string | null; created_at: string }
 interface PromoRow { id: string; code: string; description: string | null; discount_percent: number; active: boolean }
 interface ReviewRow { id: string; customer_name: string; comment: string; rating: number; approved: boolean; created_at: string; product_id: string | null; products?: { name: string } | null }
+interface PushSubRow { id: string; endpoint: string; user_id: string | null; user_agent: string | null; created_at: string; profiles?: { fullname: string | null; email: string | null } | null }
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
