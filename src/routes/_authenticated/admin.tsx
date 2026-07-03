@@ -101,6 +101,13 @@ function AdminPage() {
     if (error) return toast.error(error.message);
     reload();
   }
+  async function deletePushSub(id: string) {
+    if (!confirm("Désabonner cette souscription push ?")) return;
+    const { error } = await supabase.from("push_subscriptions").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Souscription supprimée");
+    reload();
+  }
 
   const stats = useMemo(() => {
     const revenue = orders.reduce((a, o) => a + Number(o.total_amount), 0);
