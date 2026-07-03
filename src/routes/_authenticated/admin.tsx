@@ -312,6 +312,57 @@ function AdminPage() {
             ))}
           </div>
         )}
+
+        {tab === "push" && (
+          <div className="mt-8">
+            <p className="mb-3 text-sm text-muted-foreground">
+              {pushSubs.length} souscription(s) Web Push actives. Regroupées par utilisateur (les souscriptions anonymes sont listées à part).
+            </p>
+            <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="p-3">Utilisateur</th>
+                    <th className="p-3">Appareil</th>
+                    <th className="p-3">Endpoint</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pushSubs.map((s) => {
+                    const host = (() => { try { return new URL(s.endpoint).hostname; } catch { return s.endpoint.slice(0, 30); } })();
+                    return (
+                      <tr key={s.id} className="border-t border-border align-top">
+                        <td className="p-3">
+                          {s.profiles ? (
+                            <div>
+                              <div className="font-medium">{s.profiles.fullname || s.profiles.email}</div>
+                              <div className="text-xs text-muted-foreground">{s.profiles.email}</div>
+                            </div>
+                          ) : (
+                            <span className="text-xs italic text-muted-foreground">Anonyme</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-xs text-muted-foreground max-w-[240px] truncate" title={s.user_agent ?? ""}>{s.user_agent ?? "—"}</td>
+                        <td className="p-3 text-xs text-muted-foreground">{host}</td>
+                        <td className="p-3 text-xs">{new Date(s.created_at).toLocaleString("fr-FR")}</td>
+                        <td className="p-3 text-right">
+                          <button onClick={() => deletePushSub(s.id)} className="inline-flex items-center gap-1 rounded-full border border-rose-deep px-3 py-1 text-xs text-rose-deep hover:bg-rose-pale/40">
+                            <Trash2 className="h-3 w-3" /> Désabonner
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {pushSubs.length === 0 && (
+                    <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">Aucune souscription push pour le moment.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </section>
 
       {editing && <ProductModal product={editing} onClose={() => setEditing(null)} onSave={saveProduct} />}
