@@ -45,16 +45,18 @@ interface OrderRow {
 interface CustomerRow { id: string; fullname: string | null; email: string | null; phone: string | null; created_at: string }
 interface PromoRow { id: string; code: string; description: string | null; discount_percent: number; active: boolean }
 interface ReviewRow { id: string; customer_name: string; comment: string; rating: number; approved: boolean; created_at: string; product_id: string | null; products?: { name: string } | null }
+interface PushSubRow { id: string; endpoint: string; user_id: string | null; user_agent: string | null; created_at: string; profiles?: { fullname: string | null; email: string | null } | null }
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions" | "reviews">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions" | "reviews" | "push">("dashboard");
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [promotions, setPromotions] = useState<PromoRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [pushSubs, setPushSubs] = useState<PushSubRow[]>([]);
   const [editing, setEditing] = useState<Partial<ProductRow> | null>(null);
 
   useEffect(() => {
@@ -65,18 +67,25 @@ function AdminPage() {
   }, [loading, isAdmin, navigate]);
 
   async function reload() {
-    const [p, o, c, pr, rv] = await Promise.all([
+    const [p, o, c, pr, rv, ps] = await Promise.all([
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*,order_items(product_name,quantity,unit_price)").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id,fullname,email,phone,created_at").order("created_at", { ascending: false }),
       supabase.from("promotions").select("*").order("created_at", { ascending: false }),
       supabase.from("testimonials").select("id,customer_name,comment,rating,approved,created_at,product_id,products(name)").order("created_at", { ascending: false }),
+      supabase.from("push_subscriptions").select("id,endpoint,user_id,user_agent,created_at").order("created_at", { ascending: false }),
     ]);
+    const profs = (c.data as CustomerRow[]) ?? [];
+    const profMap = new Map(profs.map((x) => [x.id, x]));
     setProducts((p.data as ProductRow[]) ?? []);
     setOrders((o.data as OrderRow[]) ?? []);
-    setCustomers((c.data as CustomerRow[]) ?? []);
+    setCustomers(profs);
     setPromotions((pr.data as PromoRow[]) ?? []);
     setReviews((rv.data as ReviewRow[]) ?? []);
+    setPushSubs(((ps.data as Omit<PushSubRow, "profiles">[]) ?? []).map((s) => ({
+      ...s,
+      profiles: s.user_id ? (profMap.get(s.user_id) ? { fullname: profMap.get(s.user_id)!.fullname, email: profMap.get(s.user_id)!.email } : null) : null,
+    })));
   }
   useEffect(() => { if (isAdmin) reload(); }, [isAdmin]);
 
@@ -90,6 +99,13 @@ function AdminPage() {
     if (!confirm("Supprimer cet avis ?")) return;
     const { error } = await supabase.from("testimonials").delete().eq("id", id);
     if (error) return toast.error(error.message);
+    reload();
+  }
+  async function deletePushSub(id: string) {
+    if (!confirm("Désabonner cette souscription push ?")) return;
+    const { error } = await supabase.from("push_subscriptions").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Souscription supprimée");
     reload();
   }
 
@@ -159,6 +175,7 @@ function AdminPage() {
             ["customers", "Clients"],
             ["promotions", "Promotions"],
             ["reviews", `Avis${reviews.filter(r=>!r.approved).length ? ` (${reviews.filter(r=>!r.approved).length})` : ""}`],
+            ["push", `Push (${pushSubs.length})`],
           ] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-2 text-sm transition ${tab === k ? "border-b-2 border-rose-deep text-rose-deep" : "text-muted-foreground hover:text-rose-deep"}`}>{l}</button>
           ))}
@@ -293,6 +310,57 @@ function AdminPage() {
                 <div className="mt-2 text-xs">{r.approved ? <span className="text-emerald-700">✓ Publié</span> : <span className="text-amber-700">⏳ En attente de modération</span>}</div>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === "push" && (
+          <div className="mt-8">
+            <p className="mb-3 text-sm text-muted-foreground">
+              {pushSubs.length} souscription(s) Web Push actives. Regroupées par utilisateur (les souscriptions anonymes sont listées à part).
+            </p>
+            <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="p-3">Utilisateur</th>
+                    <th className="p-3">Appareil</th>
+                    <th className="p-3">Endpoint</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pushSubs.map((s) => {
+                    const host = (() => { try { return new URL(s.endpoint).hostname; } catch { return s.endpoint.slice(0, 30); } })();
+                    return (
+                      <tr key={s.id} className="border-t border-border align-top">
+                        <td className="p-3">
+                          {s.profiles ? (
+                            <div>
+                              <div className="font-medium">{s.profiles.fullname || s.profiles.email}</div>
+                              <div className="text-xs text-muted-foreground">{s.profiles.email}</div>
+                            </div>
+                          ) : (
+                            <span className="text-xs italic text-muted-foreground">Anonyme</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-xs text-muted-foreground max-w-[240px] truncate" title={s.user_agent ?? ""}>{s.user_agent ?? "—"}</td>
+                        <td className="p-3 text-xs text-muted-foreground">{host}</td>
+                        <td className="p-3 text-xs">{new Date(s.created_at).toLocaleString("fr-FR")}</td>
+                        <td className="p-3 text-right">
+                          <button onClick={() => deletePushSub(s.id)} className="inline-flex items-center gap-1 rounded-full border border-rose-deep px-3 py-1 text-xs text-rose-deep hover:bg-rose-pale/40">
+                            <Trash2 className="h-3 w-3" /> Désabonner
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {pushSubs.length === 0 && (
+                    <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">Aucune souscription push pour le moment.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>
