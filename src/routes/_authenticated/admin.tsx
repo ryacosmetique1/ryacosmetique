@@ -50,12 +50,13 @@ interface PushSubRow { id: string; endpoint: string; user_id: string | null; use
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions" | "reviews">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "products" | "orders" | "customers" | "promotions" | "reviews" | "push">("dashboard");
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [promotions, setPromotions] = useState<PromoRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [pushSubs, setPushSubs] = useState<PushSubRow[]>([]);
   const [editing, setEditing] = useState<Partial<ProductRow> | null>(null);
 
   useEffect(() => {
