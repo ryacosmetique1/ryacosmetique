@@ -168,6 +168,7 @@ function AdminPage() {
             ["customers", "Clients"],
             ["promotions", "Promotions"],
             ["reviews", `Avis${reviews.filter(r=>!r.approved).length ? ` (${reviews.filter(r=>!r.approved).length})` : ""}`],
+            ["push", `Push (${pushSubs.length})`],
           ] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k as typeof tab)} className={`px-4 py-2 text-sm transition ${tab === k ? "border-b-2 border-rose-deep text-rose-deep" : "text-muted-foreground hover:text-rose-deep"}`}>{l}</button>
           ))}
