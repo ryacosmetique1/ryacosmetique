@@ -67,18 +67,25 @@ function AdminPage() {
   }, [loading, isAdmin, navigate]);
 
   async function reload() {
-    const [p, o, c, pr, rv] = await Promise.all([
+    const [p, o, c, pr, rv, ps] = await Promise.all([
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*,order_items(product_name,quantity,unit_price)").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id,fullname,email,phone,created_at").order("created_at", { ascending: false }),
       supabase.from("promotions").select("*").order("created_at", { ascending: false }),
       supabase.from("testimonials").select("id,customer_name,comment,rating,approved,created_at,product_id,products(name)").order("created_at", { ascending: false }),
+      supabase.from("push_subscriptions").select("id,endpoint,user_id,user_agent,created_at").order("created_at", { ascending: false }),
     ]);
+    const profs = (c.data as CustomerRow[]) ?? [];
+    const profMap = new Map(profs.map((x) => [x.id, x]));
     setProducts((p.data as ProductRow[]) ?? []);
     setOrders((o.data as OrderRow[]) ?? []);
-    setCustomers((c.data as CustomerRow[]) ?? []);
+    setCustomers(profs);
     setPromotions((pr.data as PromoRow[]) ?? []);
     setReviews((rv.data as ReviewRow[]) ?? []);
+    setPushSubs(((ps.data as Omit<PushSubRow, "profiles">[]) ?? []).map((s) => ({
+      ...s,
+      profiles: s.user_id ? (profMap.get(s.user_id) ? { fullname: profMap.get(s.user_id)!.fullname, email: profMap.get(s.user_id)!.email } : null) : null,
+    })));
   }
   useEffect(() => { if (isAdmin) reload(); }, [isAdmin]);
 
